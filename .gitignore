@@ -12,3 +12,5 @@
 .RData
 .Rhistory
 *_cache/*
+.Rhistory
+*.zip
