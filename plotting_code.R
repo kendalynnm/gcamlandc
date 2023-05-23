@@ -2,107 +2,20 @@
 
 library(ggplot2)
 
-
-# process single leaf data when you have just run the code and have results stored in variable called output
-
-# transform bg emissions to format able to be joined with other leaf data
-bg_emiss_out <- data.frame(t(output[["bg_emiss"]]))
-colnames(bg_emiss_out) <- row.names(output[["bg_emiss"]])
-bg_emiss_out$year <- seq(year0,last_year)
-bg_emiss_out <- bg_emiss_out %>% tidyr::pivot_longer(cols=-c("year"),names_to = "name", values_to="bg_emiss")
-#bg_emiss_out$year <- output[["leaf_data"]]$year
-
-
-# transform ag_emiss
-ag_emiss_full <- data.frame(t(output[["ag_emiss"]]))
-colnames(ag_emiss_full) <- row.names(output[["ag_emiss"]])
-ag_emiss_full$year <- seq(year0,last_year)
-ag_emiss_full <- ag_emiss_full %>% tidyr::pivot_longer(cols=-c("year"),names_to = "name", values_to="ag_emiss")
-
-plot_data <- dplyr::left_join(output[["leaf_data"]], bg_emiss_out, by=c("year","name"))
-
-
-plot_data <- left_join(plot_data, ag_emiss_full, by=c("year","name"))
-plot_data$tot_nbp <- plot_data$ag_emiss + plot_data$bg_emiss
-plot_data$npp_rh <- plot_data$NPP/plot_data$Rh
-
-plot_data_long <- plot_data %>%
-  tidyr::pivot_longer(cols=c("land_alloc","agCDensity","bgCDensity","agCarbon",
-                             "bgCarbon","NPP","Rh","litter","bg_emiss","ag_emiss","tot_nbp", "npp_rh"),
-                      names_to="variable",
-                      values_to="value")
-
 ggplot(data=plot_data_long,aes(x=year,y=value))+
   geom_line()+
   facet_wrap(~variable,scales="free_y")+
   theme_classic()
 
-ggsave(filename="sample_leaf_emissions.png",plot=fig,width=8,height=8)
+#ggsave(filename="sample_leaf_emissions.png",plot=fig,width=8,height=8)
 
 
-# PROCESS single leaf, 2 scenario data
 
-# process fully coupled
-bg_emiss_out <- data.frame(t(output_full[["bg_emiss"]]))
-colnames(bg_emiss_out) <- row.names(output_full[["bg_emiss"]])
-bg_emiss_out$year <- seq(year0,last_year)
-bg_emiss_out <- bg_emiss_out %>% tidyr::pivot_longer(cols=-c("year"),names_to = "name", values_to="bg_emiss")
-#bg_emiss_out$year <- output_full[["leaf_data"]]$year
-
-
-# transform ag_emiss
-ag_emiss_full <- data.frame(t(output_full[["ag_emiss"]]))
-colnames(ag_emiss_full) <- row.names(output_full[["ag_emiss"]])
-ag_emiss_full$year <- seq(year0,last_year)
-ag_emiss_full <- ag_emiss_full %>% tidyr::pivot_longer(cols=-c("year"),names_to = "name", values_to="ag_emiss")
-
-plot_data <- dplyr::left_join(output_full[["leaf_data"]], bg_emiss_out, by=c("year","name"))
-
-
-plot_data <- left_join(plot_data, ag_emiss_full, by=c("year","name"))
-plot_data$tot_nbp <- plot_data$ag_emiss + plot_data$bg_emiss
-plot_data$npp_rh <- plot_data$NPP/plot_data$Rh
-
-plot_data_long <- plot_data %>%
-  tidyr::pivot_longer(cols=c("land_alloc","agCDensity","bgCDensity","agCarbon",
-                             "bgCarbon","NPP","Rh","litter","bg_emiss","ag_emiss","tot_nbp", "npp_rh"),
-                      names_to="variable",
-                      values_to="value")
-
-plot_data_long$scenario <- "fully_coupled"
-
-# process base scenario
-bg_emiss_out <- data.frame(t(output[["bg_emiss"]]))
-colnames(bg_emiss_out) <- row.names(output[["bg_emiss"]])
-bg_emiss_out$year <- seq(year0,last_year)
-bg_emiss_out <- bg_emiss_out %>% tidyr::pivot_longer(cols=-c("year"),names_to = "name", values_to="bg_emiss")
-#bg_emiss_out$year <- output[["leaf_data"]]$year
-
-
-# transform ag_emiss
-ag_emiss_full <- data.frame(t(output[["ag_emiss"]]))
-colnames(ag_emiss_full) <- row.names(output[["ag_emiss"]])
-ag_emiss_full$year <- seq(year0,last_year)
-ag_emiss_full <- ag_emiss_full %>% tidyr::pivot_longer(cols=-c("year"),names_to = "name", values_to="ag_emiss")
-
-plot_data_base <- dplyr::left_join(output[["leaf_data"]], bg_emiss_out, by=c("year","name"))
-
-
-plot_data_base <- left_join(plot_data_base, ag_emiss_full, by=c("year","name"))
-plot_data_base$tot_nbp <- plot_data_base$ag_emiss + plot_data_base$bg_emiss
-plot_data_base$npp_rh <- plot_data_base$NPP/plot_data_base$Rh
-
-plot_data_long_base <- plot_data_base %>%
-  tidyr::pivot_longer(cols=c("land_alloc","agCDensity","bgCDensity","agCarbon",
-                             "bgCarbon","NPP","Rh","litter","bg_emiss","ag_emiss","tot_nbp", "npp_rh"),
-                      names_to="variable",
-                      values_to="value")
-
+#to graph the following we'd need to combine
+#reference (baseline) scenario with protected lands scenario
+#rename dataframes and add sceanrio column as appropriate
 plot_data_long_base$scenario <- "baseline"
-
-
 plot_data_all <- dplyr::bind_rows(plot_data_long,plot_data_long_base)
-
 
 ggplot(data=filter(plot_data_all,variable %in% c("tot_nbp","agCDensity","bgCDensity")),
        aes(x=year,y=value,linetype=scenario))+
@@ -111,43 +24,6 @@ ggplot(data=filter(plot_data_all,variable %in% c("tot_nbp","agCDensity","bgCDens
   theme_classic()
 
 ggsave(filename="sample_leaf_emissions.png",plot=fig,width=8,height=8)
-
-
-# plot sample of leaves
-
-test_leaves <- sample(selected,30)
-#"tot_nbp","agCDensity",
-ggplot(data=filter(plot_data_all,name %in% test_leaves,variable %in% c("bgCDensity")),
-       aes(x=year,y=value,linetype=scenario))+
-  geom_line()+
-  #facet_grid(name~variable,scales="free_y")+
-  facet_wrap(~name,scales="free_y")+
-  theme_classic()
-
-ggsave(filename="sample_leaf_emissions.png",plot=fig,width=8,height=8)
-
-
-
-# test for unusual/edge case leaves
-
-full_leaf_data <- output_full[["leaf_data"]] %>% mutate(scenario="fully-coupled")
-base_leaf_data <- output[["leaf_data"]] %>% mutate(scenario="baseline")
-leaf_data_all <- dplyr::bind_rows(base_leaf_data, full_leaf_data)
-
-leaf_data_all %>% dplyr::filter(year==2009,scenario=="fully-coupled") -> test_world
-leaf_data_all %>% dplyr::filter(year==1746,scenario=="fully-coupled") -> test_world_pre
-
-test_world %>% mutate(agCDensity_diff=agCDensity-test_world_pre$agCDensity,
-                      bgCDensity_diff=bgCDensity-test_world_pre$bgCDensity,
-                      agCDensity_pct=100*(agCDensity-test_world_pre$agCDensity)/test_world_pre$agCDensity,
-                      bgCDensity_pct=100*(bgCDensity-test_world_pre$bgCDensity)/test_world_pre$bgCDensity,
-) ->
-  test_world
-
-filter(test_world,test_world$bgCDensity_diff >= 5)  # has 13
-filter(test_world,test_world$bgCDensity_pct >= 15) # has 94
-filter(test_world,test_world$Rh >=50)
-
 
 
 # process results when they need to be read in
