@@ -64,91 +64,14 @@ full_climate_data$scenario <- "fully-coupled"
 all_climate <- dplyr::bind_rows(base_climate_data,full_climate_data)
 
 library(dplyr)
-ggplot(data=dplyr::filter(all_climate,year<=2050),aes(x=year,y=value,linetype=scenario))+
+ggplot(data=dplyr::filter(climate_data,year<=2050),aes(x=year,y=value))+
   geom_line()+
   facet_wrap(~variable,scales="free_y")+
   theme_classic() -> fig
 ggsave(filename=paste0("climate_data.png"),plot=fig,width=10,height=6)
 
 
-
-head(full_leaf_data)
-
-#full_leaf_data <- full_leaf_data %>% select(-c("X")) %>% mutate(scenario="fully-coupled")
-full_leaf_data <- full_leaf_data %>% mutate(scenario="fully-coupled")
-base_leaf_data <- base_leaf_data %>% select(-c("X")) %>% mutate(scenario="baseline")
-leaf_data_all <- dplyr::bind_rows(base_leaf_data, full_leaf_data)
-
-
-
-# transform base ag_emiss
-ag_emiss_base <- data.frame(t(base_ag_emiss))
-colnames(ag_emiss_base) <- row.names(output[["ag_emiss"]])
-ag_emiss_base$year <- seq(year0,last_year)
-
-ag_emiss_base <- ag_emiss_base %>% tidyr::pivot_longer(cols=-c("year"),names_to = "name", values_to="ag_emiss")
-ag_emiss_base$scenario <- "baseline"
-
-# transform ag_emiss
-ag_emiss_full <- data.frame(t(full_ag_emiss))
-colnames(ag_emiss_full) <- row.names(output[["ag_emiss"]])
-ag_emiss_full$year <- seq(year0,last_year)
-
-ag_emiss_full <- ag_emiss_full %>% tidyr::pivot_longer(cols=-c("year"),names_to = "name", values_to="ag_emiss")
-ag_emiss_full$scenario <- "fully-coupled"
-
-
-ag_emiss_all <- dplyr::bind_rows(ag_emiss_base, ag_emiss_full)
-ag_emiss_plt <- dplyr::filter(ag_emiss_all, year <= 2099)
-
-# transform bg_emiss
-bg_emiss_base <- data.frame(t(base_bg_emiss))
-colnames(bg_emiss_base) <- row.names(output[["bg_emiss"]])
-bg_emiss_base$year <- seq(year0,last_year)
-
-bg_emiss_base <- bg_emiss_base %>% tidyr::pivot_longer(cols=-c("year"),names_to = "name", values_to="bg_emiss")
-#bg_emiss_base$year <- output[["leaf_data"]]$year
-bg_emiss_base$scenario <- "baseline"
-
-
-# transform bg_emiss
-bg_emiss_full <- data.frame(t(full_bg_emiss))
-colnames(bg_emiss_full) <- row.names(output[["bg_emiss"]])
-bg_emiss_full$year <- seq(year0,last_year)
-
-bg_emiss_full <- bg_emiss_full %>% tidyr::pivot_longer(cols=-c("year"),names_to = "name", values_to="bg_emiss")
-#bg_emiss_full$year <- output[["leaf_data"]]$year
-bg_emiss_full$scenario <- "fully-coupled"
-
-
-bg_emiss_all <- dplyr::bind_rows(bg_emiss_base, bg_emiss_full)
-
-# trim off post-2010 years for the sake of plotting
-bg_emiss_plt <- dplyr::filter(bg_emiss_all, year <= 2099)
-
-
-plot_data <- dplyr::left_join(leaf_data_all, bg_emiss_plt, by=c("year","name","scenario"))
-
-
-plot_data <- left_join(plot_data, ag_emiss_plt, by=c("year","name", "scenario"))
-plot_data$tot_nbp <- plot_data$ag_emiss + plot_data$bg_emiss
-
-plot_data_2050 <- plot_data %>% dplyr::filter(year<=2050)
-
-
-
-plot_data_emiss <- select(plot_data_2050,c("year","name","scenario","region", "tot_nbp"))
-
-
-plot_data_emiss %>% group_by(region,scenario, year) %>% summarise(nbp=sum(tot_nbp)) -> reg_totals
-
-plot_data_emiss %>% group_by(scenario, year) %>% summarise(nbp=sum(tot_nbp)) -> world_totals
-
-
-plot_data_land <- select(plot_data,c("year","name","scenario","region", "land_alloc"))
-plot_data_land %>% group_by(region,scenario, year) %>% summarise(land_alloc=sum(land_alloc)) -> reg_land_totals
-
-
+#For comparing to Global Carbon Project
 gcp_data <- read.csv("extdata/nbp_gcp.csv")
 
 gcp_data$scenario <- "Global Carbon Project"
@@ -199,7 +122,7 @@ ggsave(filename="world_2015_raw.png",plot=fig,width=8,height=3.5)
 
 
 
-
+#reg_totals comes from make_maps
 all_regs <- unique(reg_totals$region)
 
 for (i in 1:4){
@@ -264,30 +187,34 @@ ggplot(data=filter(reg_land_totals,region %in% curr_regions),aes(x=year,y=land_a
 
 
 
-test_leaves <- sample(row.names(output[["ag_emiss"]]),500)
-grep("Forest",test_leaves,value=TRUE)
+
+#sample leaves
+
+#not sure if this works
+# test_leaves <- sample(row.names(AG_emissions),500)
+# grep("Forest",test_leaves,value=TRUE)
 
 sample_leaves <- c("China_Grassland_IndusR", "India_Shrubland_BrahmaniR",
                    "USA_CornC4_GreatBasin_RFD_hi", "South America_Northern_Wheat_SAmerCstNE_RFD_lo",
                    "Russia_Tundra_BalticSea", "Africa_Northern_UnmanagedPasture_MeditS",
                    "Brazil_UnmanagedForest_RioLaPlata", "Russia_Forest_KaraSea")
 
-sample_leaf_data <- dplyr::filter(plot_data_2050,name %in% sample_leaves)
+sample_leaf_data <- dplyr::filter(plot_data_long,name %in% sample_leaves)
 
-plot_data_long <- sample_leaf_data %>%
+plot_data_long2 <- sample_leaf_data %>%
   tidyr::pivot_longer(cols=c("land_alloc","agCDensity","bgCDensity","agCarbon",
                              "bgCarbon","NPP","Rh","litter","bg_emiss","ag_emiss","tot_nbp"),
                       names_to="variable",
                       values_to="value")
 
-sample_emiss_data <- plot_data_long %>% dplyr::filter(variable=="tot_nbp") %>% select(-c("variable"))
-sample_density <- plot_data_long %>% dplyr::filter(variable %in% c("agCDensity","bgCDensity"))
+sample_emiss_data <- sample_leaf_data %>% dplyr::filter(variable=="tot_nbp") %>% select(-c("variable"))
+sample_density <- sample_leaf_data %>% dplyr::filter(variable %in% c("agCDensity","bgCDensity"))
 
-sample_bgDensity <- plot_data_long %>% dplyr::filter(variable=="bgCDensity") %>% select(-c("variable"))
-sample_agDensity <- plot_data_long %>% dplyr::filter(variable=="agCDensity") %>% select(-c("variable"))
+sample_bgDensity <- sample_leaf_data %>% dplyr::filter(variable=="bgCDensity") %>% select(-c("variable"))
+sample_agDensity <- sample_leaf_data %>% dplyr::filter(variable=="agCDensity") %>% select(-c("variable"))
 
 
-ggplot(data=sample_emiss_data,aes(x=year,y=value,linetype=scenario))+
+ggplot(data=sample_emiss_data,aes(x=year,y=value)) +#,linetype=scenario))+
   geom_line()+
   ylab("Land Carbon Flux (Mt C/yr)")+
   xlab("Year")+
@@ -296,7 +223,7 @@ ggplot(data=sample_emiss_data,aes(x=year,y=value,linetype=scenario))+
 ggsave(filename="sample_leaf_emissions.png",plot=fig,width=10,height=8)
 
 
-ggplot(data=sample_agDensity,aes(x=year,y=value,linetype=scenario))+
+ggplot(data=sample_agDensity,aes(x=year,y=value)) +#,linetype=scenario))+
   geom_line()+
   ylab("Vegetation Carbon Density")+
   xlab("Year")+
@@ -304,7 +231,7 @@ ggplot(data=sample_agDensity,aes(x=year,y=value,linetype=scenario))+
   theme_classic()->fig
 ggsave(filename="sample_leaf_agCDensities.png",plot=fig,width=10,height=8)
 
-ggplot(data=sample_bgDensity,aes(x=year,y=value,linetype=scenario))+
+ggplot(data=sample_bgDensity,aes(x=year,y=value)) +#,linetype=scenario))+
   geom_line()+
   ylab("Soil Carbon Density")+
   xlab("Year")+
