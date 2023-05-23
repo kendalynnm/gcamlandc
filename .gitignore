@@ -3,6 +3,7 @@
 
 # R and RStudio files
 .Rproj.user
+*.RDS
 *.html
 *.png
 *.tiff
