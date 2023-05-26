@@ -210,11 +210,11 @@ plot_data_long2 <- sample_leaf_data %>%
 sample_emiss_data <- sample_leaf_data %>% dplyr::filter(variable=="tot_nbp") %>% select(-c("variable"))
 sample_density <- sample_leaf_data %>% dplyr::filter(variable %in% c("agCDensity","bgCDensity"))
 
-sample_bgDensity <- sample_leaf_data %>% dplyr::filter(variable=="bgCDensity") %>% select(-c("variable"))
-sample_agDensity <- sample_leaf_data %>% dplyr::filter(variable=="agCDensity") %>% select(-c("variable"))
+sample_ag_emiss <- sample_leaf_data %>% dplyr::filter(variable=="ag_emiss") %>% select(-c("variable"))
+sample_bg_emiss <- sample_leaf_data %>% dplyr::filter(variable=="bg_emiss") %>% select(-c("variable"))
 
 
-ggplot(data=sample_emiss_data,aes(x=year,y=value)) +#,linetype=scenario))+
+ggplot(data=sample_emiss_data,aes(x=year,y=value, linetype=scenario))+
   geom_line()+
   ylab("Land Carbon Flux (Mt C/yr)")+
   xlab("Year")+
@@ -223,21 +223,21 @@ ggplot(data=sample_emiss_data,aes(x=year,y=value)) +#,linetype=scenario))+
 ggsave(filename="sample_leaf_emissions.png",plot=fig,width=10,height=8)
 
 
-ggplot(data=sample_agDensity,aes(x=year,y=value)) +#,linetype=scenario))+
+ggplot(data=sample_ag_emiss,aes(x=year,y=value)) +#,linetype=scenario))+
   geom_line()+
-  ylab("Vegetation Carbon Density")+
+  ylab("Aboveground Emissions")+
   xlab("Year")+
   facet_wrap(~name,scales="free_y",nrow=4)+
   theme_classic()->fig
-ggsave(filename="sample_leaf_agCDensities.png",plot=fig,width=10,height=8)
+ggsave(filename="sample_leaf_ag_emiss.png",plot=fig,width=10,height=8)
 
-ggplot(data=sample_bgDensity,aes(x=year,y=value)) +#,linetype=scenario))+
+ggplot(data=sample_bg_emiss,aes(x=year,y=value)) +#,linetype=scenario))+
   geom_line()+
-  ylab("Soil Carbon Density")+
+  ylab("Belowground Emissions")+
   xlab("Year")+
   facet_wrap(~name,scales="free_y",nrow=4)+
   theme_classic()->fig
-ggsave(filename="sample_leaf_bgCDensities.png",plot=fig,width=10,height=8)
+ggsave(filename="sample_leaf_bg_emiss.png",plot=fig,width=10,height=8)
 
 
 
