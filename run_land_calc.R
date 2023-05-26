@@ -2,20 +2,22 @@
 source("gcam_utils.R")
 source("land_utils.R")
 
+Sys.setenv("PATH" = "C:/Users/morr497/Documents/OneDriveSafeSpace/openjdk-20.0.1_windows-x64_bin/jdk-20.0.1/bin")
+
 # necessary inputs: 5 gcam land xmls + 2 protected lands, gcam database (for grabbing modern land allocation data)
 # will need to set paths for each of these in code below
 
 read_data <- TRUE  # set this flag if land allocation data needs to be updated. If false, will read from saved files
 read_params <- TRUE # set this flag if land leaf parameter data needs to be updated (carbon densities, soil timescales, etc). If false, will read from saved files
-protected <- FALSE  # set this flag to include protected lands. If true, will read in protected lands data to replace land inputs 2 & 3
+protected <- FALSE # set this flag to include protected lands. If true, will read in protected lands data to replace land inputs 2 & 3
 
 year0 <- 1745
 last_year <- 2100  # the year to have carbon emissions vectors go through
 stop_year <- 2010  # the year to actually stop calculations
 
 ccycling=TRUE  # if TRUE, turns on carbon density calculations at each time step. If FALSE, code uses fixed densities
-rhEff=FALSE  # if TRUE, enables Q10 feedback with temperature (affects soil respiration)
-betaEff=FALSE  # if TRUE, enables CO2 fertilization feedback (affects NPP)
+rhEff=TRUE  # if TRUE, enables Q10 feedback with temperature (affects soil respiration)
+betaEff=TRUE  # if TRUE, enables CO2 fertilization feedback (affects NPP)
 coupled=TRUE  # this refers to coupling with Hector. If true, then NBP_constraint is set each year for Hector
 
 
@@ -67,8 +69,8 @@ outer_land_alloc2$name <- paste(outer_land_alloc2$region, outer_land_alloc2$land
 
 
 # uncomment two lines below to run with a smaller set of land leaves
-#selected <- sample(outer_params2$name,50)
-#outer_params2 <- filter(outer_params2,name %in% selected)
+selected <- sample(outer_params2$name,25)
+outer_params2 <- filter(outer_params2,name %in% selected)
 
 years <- unique(outer_land_alloc2$year)
 years <- years[years>=year0]
@@ -89,7 +91,7 @@ outer_params2 <- data.table::setDT(outer_params2)
 
 output <- run_all_years(outer_land_alloc2, outer_params2, ini_file, stop_year=stop_year, last_year=last_year, rhEff=rhEff, betaEff=betaEff, cCycling=ccycling, coupled=coupled)
 
-scenario_name <- "full_world_real-baseline_no-protected_2100"
+scenario_name <- "sampleT4_reference_2100"
 write.csv(output[["leaf_data"]],file=paste0("data/leaf_data_",scenario_name,".csv"))
 write.csv(output[["params"]],file=paste0("data/leaf_params_",scenario_name,".csv"))
 write.csv(output[["climate"]],file=paste0("data/climate_data_",scenario_name,".csv"))
