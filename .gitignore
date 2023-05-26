@@ -2,6 +2,7 @@
 .DS_Store
 
 # R and RStudio files
+*.Rproj
 .Rproj.user
 *.RDS
 *.html
