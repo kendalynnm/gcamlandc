@@ -69,8 +69,8 @@ outer_land_alloc2$name <- paste(outer_land_alloc2$region, outer_land_alloc2$land
 
 
 # uncomment two lines below to run with a smaller set of land leaves
-selected <- sample(outer_params2$name,25)
-outer_params2 <- filter(outer_params2,name %in% selected)
+# selected <- sample(outer_params2$name,25)
+# outer_params2 <- filter(outer_params2,name %in% selected)
 
 years <- unique(outer_land_alloc2$year)
 years <- years[years>=year0]
@@ -91,7 +91,7 @@ outer_params2 <- data.table::setDT(outer_params2)
 
 output <- run_all_years(outer_land_alloc2, outer_params2, ini_file, stop_year=stop_year, last_year=last_year, rhEff=rhEff, betaEff=betaEff, cCycling=ccycling, coupled=coupled)
 
-scenario_name <- "sampleT4_reference_2100"
+scenario_name <- "full_world_real-baseline_no-protected_2100"
 write.csv(output[["leaf_data"]],file=paste0("data/leaf_data_",scenario_name,".csv"))
 write.csv(output[["params"]],file=paste0("data/leaf_params_",scenario_name,".csv"))
 write.csv(output[["climate"]],file=paste0("data/climate_data_",scenario_name,".csv"))

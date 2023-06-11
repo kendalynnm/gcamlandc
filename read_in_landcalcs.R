@@ -5,6 +5,13 @@ getwd()
 Sys.setenv("PATH" = "C:/Users/morr497/Documents/OneDriveSafeSpace/openjdk-20.0.1_windows-x64_bin/jdk-20.0.1/bin")
 system2("java", "-version")
 
+# AG_emissions <- read.csv("data/ag_emiss_sampleT4_reference_2100.csv", row.names = 1)
+# BG_emissions <- read.csv("data/bg_emiss_sampleT4_reference_2100.csv", row.names = 1)
+# climate_data <- read.csv("data/climate_data_sampleT4_reference_2100.csv")
+# gcam_land <- read.csv("data/gcam_land_alloc.csv")
+# leaf_data <- read.csv("data/leaf_data_sampleT4_reference_2100.csv")
+# leaf_params <- read.csv("data/leaf_params_sampleT4_reference_2100.csv")
+
 AG_emissions <- read.csv("data_reference/ag_emiss_full_world_real-baseline_no-protected_2100.csv", row.names = 1)
 BG_emissions <- read.csv("data_reference/bg_emiss_full_world_real-baseline_no-protected_2100.csv", row.names = 1)
 climate_data <- read.csv("data_reference/climate_data_full_world_real-baseline_no-protected_2100.csv")
@@ -14,7 +21,9 @@ leaf_params <- read.csv("data_reference/leaf_params_full_world_real-baseline_no-
 
 # transform bg emissions to format able to be joined with other leaf data
 BG <- data.frame(t(BG_emissions))
+#BG <- data.frame(t(full_bg_emiss))
 colnames(BG) <- row.names(BG_emissions)
+#colnames(BG) <- row.names(full_bg_emiss)
 BG$year <- seq(year0,last_year)
 BG_final <- BG %>% tidyr::pivot_longer(cols=-c("year"),
                                  names_to = "name",
@@ -22,7 +31,9 @@ BG_final <- BG %>% tidyr::pivot_longer(cols=-c("year"),
 
 # same for ag emissions
 AG <- data.frame(t(AG_emissions))
+#AG <- data.frame(t(full_ag_emiss))
 colnames(AG) <- row.names(AG_emissions)
+#colnames(AG) <- row.names(full_ag_emiss)
 AG$year <- seq(year0,last_year)
 AG_final <- AG %>% tidyr::pivot_longer(cols=-c("year"),
                                        names_to = "name",
