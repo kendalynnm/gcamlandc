@@ -1,14 +1,21 @@
 library(dplyr)  # needed for pipelines
 
-read_land_inputs_xml2 <- function(folder="inputs"){
+read_land_inputs_xml2 <- function(folder="inputs", protected){
+  
   land1 <- xml2::read_xml(paste0(folder,"/land_input_1.xml"))
   land1_root <- xml2::xml_root(land1)
 
-  land2 <- xml2::read_xml(paste0(folder,"/land_input_2.xml"))
+  if(protected == TRUE){land2 <- xml2::read_xml(paste0(folder,"/protected_land_input_2.xml"))
+  land2_root <- xml2::xml_root(land2)
+  
+  land3 <- xml2::read_xml(paste0(folder,"/protected_land_input_3.xml"))
+  land3_root <- xml2::xml_root(land3)}
+  
+  else{land2 <- xml2::read_xml(paste0(folder,"/land_input_2.xml"))
   land2_root <- xml2::xml_root(land2)
 
   land3 <- xml2::read_xml(paste0(folder,"/land_input_3_IRR.xml"))
-  land3_root <- xml2::xml_root(land3)
+  land3_root <- xml2::xml_root(land3)}
 
   land4 <- xml2::read_xml(paste0(folder,"/land_input_4_IRR_MGMT.xml"))
   land4_root <- xml2::xml_root(land4)
@@ -17,6 +24,7 @@ read_land_inputs_xml2 <- function(folder="inputs"){
   land5_root <- xml2::xml_root(land5)
 
   land_roots <- list(land1_root, land2_root, land3_root, land4_root, land5_root)
+
 
   return(land_roots)
 }
