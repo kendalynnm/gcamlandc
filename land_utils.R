@@ -197,10 +197,13 @@ calc_annual_leaf_luc <- function(climate_data, agEmissions, bgEmissions, prev_da
 
 }
 
+
+
 # assumes params is wide format
 initialize_data <- function(land_alloc, params, year0, leaf_data, climate_data, rhEff,write=TRUE){
+  
   regions <- unique(land_alloc$region)
-
+  
   data_idx <- 1
   leaf_idx <- 1
   leaf_count <- 0
@@ -209,6 +212,21 @@ initialize_data <- function(land_alloc, params, year0, leaf_data, climate_data, 
   leaf_data0 <- leaf_data[year=={{year0}},]
   land_alloc0 <- land_alloc[year=={{year0}},]
 
+    
+  params %>%
+    mutate(protected = if_else(grepl("Protected", params$landleaf) == TRUE, TRUE, FALSE),
+           landleaf = gsub("Protected", "", landleaf)) %>%
+    group_by(region, landleaf) %>%
+    fill(`above-ground-carbon-density`,
+         `below-ground-carbon-density`,
+         `mature-age`) %>%
+    mutate(prefix = if_else(protected == TRUE, "Protected", "")) %>%
+    unite(landleaf, prefix, landleaf, sep = "") %>%
+    select(-protected) %>%
+    ungroup() %>%
+    as.data.table(.) -> params
+  
+  
   for (leaf_region in regions){
     print(leaf_region)
     reg_land_alloc <- land_alloc0[region=={{leaf_region}},]
@@ -299,7 +317,9 @@ run_all_years <- function(land_alloc, params, ini_file, last_year=2100, stop_yea
 
   init_output <- initialize_data(land_alloc, params, year0, leaf_data, climate_data, rhEff=rhEff,write=TRUE)
 
+  
   params <- init_output[["params"]]
+  #here in the function as written, zeros convert to NA
   leaf_data <- init_output[["leaf_data"]]
   leaf_count <- init_output[["leaf_count"]]
   leaf_names <- init_output[["leaf_names"]]
@@ -339,7 +359,8 @@ run_all_years <- function(land_alloc, params, ini_file, last_year=2100, stop_yea
         curr_land <- reg_land_alloc[reg_land_idx,]$value
 
         leaf_params <- reg_params[which(reg_params$landleaf=={{leaf}}),]
-
+        
+        
         # get emissions vectors
         agEmissions <- ag_emiss_data[paste0(leaf_region,"_",leaf),]
         bgEmissions <- bg_emiss_data[paste0(leaf_region,"_",leaf),]

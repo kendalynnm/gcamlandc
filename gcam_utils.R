@@ -224,6 +224,7 @@ add_protected_leaves <- function(leaf_data_out, first_xml, second_xml, gcam_land
 
 get_leaf_params <- function(land_roots, soilTimeScales, land_alloc_data, data_names = c("above-ground-carbon-density","below-ground-carbon-density","mature-age")
 ){
+  
   leaf_params <- data.frame(matrix(ncol=2+length(data_names),nrow=0))
   colnames(leaf_params) <- c("region","landleaf",data_names)
   count <- 0
