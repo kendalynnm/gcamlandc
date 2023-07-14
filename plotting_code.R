@@ -366,10 +366,10 @@ Nelson_data %>%
 ggplot(data=um_Nelson, aes(x=year,y=value))+
   geom_line()+
   facet_wrap(name~variable,scales="free_y")+
-  ggtitle("Nelson River Basin, Unmanaged") +
+  ggtitle("Nelson River Basin, Unmanaged, Protected") +
   theme_classic() -> fig
 
-ggsave(filename="NelsonRiver_Unmanaged_Reference.png",plot=fig,width=12,height=8)
+ggsave(filename="NelsonRiver_Unmanaged_Protected.png",plot=fig,width=12,height=8)
 
 ggplot(data=dplyr::filter(plot_data_long,name %in% leaves),aes(x=year,y=value,linetype=scenario))+
   geom_line()+
