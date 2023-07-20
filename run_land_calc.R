@@ -8,17 +8,17 @@ library(tidyr)
 # will need to set paths for each of these in code below
 
 read_data <- TRUE  # set this flag if land allocation data needs to be updated. If false, will read from saved files
-read_params <- TRUE # set this flag if land leaf parameter data needs to be updated (carbon densities, soil timescales, etc). If false, will read from saved files
+read_params <- FALSE # set this flag if land leaf parameter data needs to be updated (carbon densities, soil timescales, etc). If false, will read from saved files
 protected <- TRUE # set this flag to include protected lands. If true, will read in protected lands data to replace land inputs 2 & 3
 
 year0 <- 1745
 last_year <- 2100  # the year to have carbon emissions vectors go through
 stop_year <- 2010  # the year to actually stop calculations
 
-ccycling=TRUE  # if TRUE, turns on carbon density calculations at each time step. If FALSE, code uses fixed densities
-rhEff=TRUE  # if TRUE, enables Q10 feedback with temperature (affects soil respiration)
-betaEff=TRUE  # if TRUE, enables CO2 fertilization feedback (affects NPP)
-coupled=TRUE  # this refers to coupling with Hector. If true, then NBP_constraint is set each year for Hector
+ccycling=FALSE  # if TRUE, turns on carbon density calculations at each time step. If FALSE, code uses fixed densities
+rhEff=FALSE  # if TRUE, enables Q10 feedback with temperature (affects soil respiration)
+betaEff=FALSE  # if TRUE, enables CO2 fertilization feedback (affects NPP)
+coupled=FALSE  # this refers to coupling with Hector. If true, then NBP_constraint is set each year for Hector
 
 
 # Load in leaf data:
@@ -46,8 +46,8 @@ if(protected){
     
 } else {
   if (protected){
-    leaf_data <- readRDS(file="protected_leaf_data.RDS")
-  } else leaf_data <- readRDS(file="leaf_data.RDS")
+    leaf_data <- readRDS(file="data/protected_leaf_data.RDS")
+  } else leaf_data <- readRDS(file="data/leaf_data.RDS")
 } # end loading leaf data
 
 
@@ -61,10 +61,10 @@ if (read_params){
   soil_timescales$soilTimeScale <- as.numeric(soil_timescales$soilTimeScale)
 
   outer_params2 <- get_leaf_params(land_roots, soil_timescales, leaf_data)
-  saveRDS(outer_params2,file="param_data.RDS")
+  saveRDS(outer_params2,file="data/param_data.RDS")
   
 } else {
-  outer_params2 <- readRDS("updated_param_data.RDS")
+  outer_params2 <- readRDS("data/param_data.RDS")
   
 }
 
