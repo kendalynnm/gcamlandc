@@ -214,7 +214,8 @@ initialize_data <- function(land_alloc, params, year0, leaf_data, climate_data, 
 
     
   params %>%
-    mutate(protected = if_else(grepl("Protected", params$landleaf) == TRUE, TRUE, FALSE),
+    mutate(protected = if_else(grepl("Protected",
+                                     params$landleaf) == TRUE, TRUE, FALSE),
            landleaf = gsub("Protected", "", landleaf)) %>%
     group_by(region, landleaf) %>%
     fill(`above-ground-carbon-density`,

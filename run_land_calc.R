@@ -21,49 +21,36 @@ betaEff=TRUE  # if TRUE, enables CO2 fertilization feedback (affects NPP)
 coupled=TRUE  # this refers to coupling with Hector. If true, then NBP_constraint is set each year for Hector
 
 
+# Load in leaf data:
+# Either by reading from raw gcamdata xml files and GCAM output data base with
+# functions in gcam_utils.R (read.data == TRUE),
+# OR if that has been done already and saved (read_data == FALSE), just load those
+
 if (read_data){
   # get input data from GCAM
-  # land_roots <- read_land_inputs_xml2(folder="land_xml", protected = FALSE)
-  # 
-  # gcam_land_alloc <- get_gcam_land_alloc(db_name="database_basexdb",
-  #                                        gcam_dir= "reference",
-  #                                        scenario="Reference", read_from_file=FALSE)  # scenario is doing nothing when read_from_file is TRUE
-  # 
-  # leaf_data <- process_xml_inputs(land_roots, gcam_land_alloc)
-  # 
-  # saveRDS(leaf_data,file="data/leaf_data_test.RDS")  # store for future use
-  
-  # this currently does something weird. Alternative is to just change the land roots in the read_land_inputs_xml2 to either include or not include protected land
-  if (protected){
-    land_roots <- read_land_inputs_xml2(folder="land_xml", protected = TRUE)
-    
     gcam_land_alloc <- get_gcam_land_alloc(db_name="database_basexdb",
                                            gcam_dir= "reference",
-                                           scenario="Reference", read_from_file=FALSE)  # scenario is doing nothing when read_from_file is TRUE
+                                           scenario="Reference",
+                                           read_from_file=TRUE)
+    # scenario is doing nothing when read_from_file is TRUE
     
-    leaf_data <- process_xml_inputs(land_roots, gcam_land_alloc)
-    # input_file <- "reference/protected_land_input_2.xml"
-    # additional_file <- "reference/protected_land_input_3.xml"
-    # leaf_data <- add_protected_leaves(leaf_data,input_file,additional_file,gcam_land_alloc)
-    saveRDS(leaf_data,file="data/protected_leaf_data.RDS")  # store for future use
-  }
+    leaf_data <- process_xml_inputs(land_roots = read_land_inputs_xml2(folder = "reference",
+                                                                       protected = protected),
+                                    gcam_land_alloc)
+if(protected){
+  saveRDS(leaf_data,file="data/protected_leaf_data.RDS")  # store for future use
+}
   else{
-    land_roots <- read_land_inputs_xml2(folder="land_xml", protected = FALSE)
+    saveRDS(leaf_data, file="data/leaf_data.RDS") 
+  } # end store for future use
     
-    gcam_land_alloc <- get_gcam_land_alloc(db_name="database_basexdb",
-                                           gcam_dir= "reference",
-                                           scenario="Reference", read_from_file=FALSE)  # scenario is doing nothing when read_from_file is TRUE
-    
-    leaf_data <- process_xml_inputs(land_roots, gcam_land_alloc)
-    
-    saveRDS(leaf_data,file="data/leaf_data_test.RDS") 
-  }
-  
 } else {
   if (protected){
     leaf_data <- readRDS(file="protected_leaf_data.RDS")
   } else leaf_data <- readRDS(file="leaf_data.RDS")
-}
+} # end loading leaf data
+
+
 
 leaf_data$name <- paste0(leaf_data$region,"_",leaf_data$landleaf)  # add single column with region + leaf info for easier reference later
 
