@@ -12,7 +12,6 @@
 *.log
 *.basex
 .RData
-.Rhistory
 *_cache/*
-.Rhistory
+*.Rhistory
 *.zip
