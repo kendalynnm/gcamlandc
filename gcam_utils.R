@@ -1,6 +1,6 @@
 library(dplyr)  # needed for pipelines
 
-read_land_inputs_xml2 <- function(folder="inputs", protected){
+read_land_inputs_xml2 <- function(folder="reference", protected){
   
   land1 <- xml2::read_xml(paste0(folder,"/land_input_1.xml"))
   land1_root <- xml2::xml_root(land1)
@@ -368,7 +368,7 @@ get_soilTS_byRegion <- function(root_node){
   return(data)
 }
 
-get_gcam_land_alloc <- function(db_name="database_basexdb", gcam_dir="~/Dropbox/Research/gcam_projects/gcamv5_4_release/output/", scenario="Reference", read_from_file=FALSE, filename="data/gcam_land_alloc.csv"){
+get_gcam_land_alloc <- function(db_name="database_basexdb", gcam_dir="reference", scenario="Reference", read_from_file=FALSE, filename="data/gcam_land_alloc.csv"){
 
   if (read_from_file) {
     gcam_land_alloc <- read.csv2(file=filename,header=TRUE)
@@ -398,7 +398,7 @@ get_gcam_land_alloc_by_leaf <- function(leaf_region, leaf_name, gcam_alloc){
   return(leaf_land_alloc)
 }
 
-get_gcam_emissions <- function(db_name="database_basexdb", gcam_dir="~/Dropbox/Research/gcam_projects/gcamv5_4_release/output/"){
+get_gcam_emissions <- function(db_name="database_basexdb", gcam_dir="reference"){
   base_conn <- localDBConn(gcam_dir, db_name)
   luc_query <- '<query title="Land Use Change Emission">
          <axis1 name="land-use-change-emission">LandLeaf</axis1>
