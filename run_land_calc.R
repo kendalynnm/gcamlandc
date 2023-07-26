@@ -7,7 +7,7 @@ library(tidyr)
 # necessary inputs: 5 gcam land xmls + 2 protected lands, gcam database (for grabbing modern land allocation data)
 # will need to set paths for each of these in code below
 
-read_data <- TRUE  # set this flag if land allocation data needs to be updated. If false, will read from saved files
+read_data <- FALSE  # set this flag if land allocation data needs to be updated. If false, will read from saved files
 read_params <- FALSE # set this flag if land leaf parameter data needs to be updated (carbon densities, soil timescales, etc). If false, will read from saved files
 protected <- TRUE # set this flag to include protected lands. If true, will read in protected lands data to replace land inputs 2 & 3
 
@@ -15,15 +15,15 @@ year0 <- 1745
 last_year <- 2100  # the year to have carbon emissions vectors go through
 stop_year <- 2010  # the year to actually stop calculations
 
-ccycling=FALSE  # if TRUE, turns on carbon density calculations at each time step. If FALSE, code uses fixed densities
-rhEff=FALSE  # if TRUE, enables Q10 feedback with temperature (affects soil respiration)
-betaEff=FALSE  # if TRUE, enables CO2 fertilization feedback (affects NPP)
-coupled=FALSE  # this refers to coupling with Hector. If true, then NBP_constraint is set each year for Hector
+ccycling= TRUE  # if TRUE, turns on carbon density calculations at each time step. If FALSE, code uses fixed densities
+rhEff= TRUE  # if TRUE, enables Q10 feedback with temperature (affects soil respiration)
+betaEff= TRUE  # if TRUE, enables CO2 fertilization feedback (affects NPP)
+coupled= TRUE  # this refers to coupling with Hector. If true, then NBP_constraint is set each year for Hector
 
 
 # Load in leaf data:
 # Either by reading from raw gcamdata xml files and GCAM output data base with
-# functions in gcam_utils.R (read.data == TRUE),
+# functions in gcam_utils.R (read_data == TRUE),
 # OR if that has been done already and saved (read_data == FALSE), just load those
 
 if (read_data){
@@ -34,9 +34,8 @@ if (read_data){
                                            read_from_file=TRUE)
     # scenario is doing nothing when read_from_file is TRUE
     
-    leaf_data <- process_xml_inputs(land_roots = read_land_inputs_xml2(folder = "reference",
-                                                                       protected = protected),
-                                    gcam_land_alloc)
+    land_roots <- read_land_inputs_xml2(folder = "reference", protected = protected)
+    leaf_data <- process_xml_inputs(land_roots, gcam_land_alloc)
 if(protected){
   saveRDS(leaf_data,file="data/protected_leaf_data.RDS")  # store for future use
 }
@@ -94,7 +93,10 @@ ini_file <- system.file(scenario_file, package="hector")
 outer_land_alloc2 <- data.table::setDT(outer_land_alloc2)
 outer_params2 <- data.table::setDT(outer_params2)
 
-output <- run_all_years(outer_land_alloc2, outer_params2, ini_file, stop_year=stop_year, last_year=last_year, rhEff=rhEff, betaEff=betaEff, cCycling=ccycling, coupled=coupled)
+output <- run_all_years(outer_land_alloc2, outer_params2, ini_file,
+                        stop_year=stop_year, last_year=last_year,
+                        rhEff=rhEff, betaEff=betaEff,
+                        cCycling=ccycling, coupled=coupled)
 
 scenario_name <- "full_world_real-protected_2100"
 write.csv(output[["leaf_data"]],file=paste0("data/leaf_data_",scenario_name,".csv"))
