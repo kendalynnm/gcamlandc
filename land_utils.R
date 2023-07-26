@@ -212,19 +212,23 @@ initialize_data <- function(land_alloc, params, year0, leaf_data, climate_data, 
   leaf_data0 <- leaf_data[year=={{year0}},]
   land_alloc0 <- land_alloc[year=={{year0}},]
 
-    
+  #matching carbon density and mature age data from protected leaves to their unprotected
+  #counterparts, which have no values in xmls
   params %>%
-    mutate(protected = if_else(grepl("Protected",
-                                     params$landleaf) == TRUE, TRUE, FALSE),
-           landleaf = gsub("Protected", "", landleaf)) %>%
-    group_by(region, landleaf) %>%
+    mutate(#protected = grepl("Protected", params$landleaf),
+           landleaf_temp = gsub("Protected", "", landleaf)) %>%
+    group_by(region, landleaf_temp) %>%
     fill(`above-ground-carbon-density`,
          `below-ground-carbon-density`,
          `mature-age`) %>%
-    mutate(prefix = if_else(protected == TRUE, "Protected", "")) %>%
-    unite(landleaf, prefix, landleaf, sep = "") %>%
-    select(-protected) %>%
+    # mutate(prefix = if_else(protected == TRUE, "Protected", "")) %>%
+    # unite(landleaf, prefix, landleaf, sep = "") %>%
+    select(-landleaf_temp) %>%
     ungroup() %>%
+    # TODO: when params comes in there are some duplicated rows, 
+    # e.g. UnmanagedPasture_PacArctic
+    # We need to figure out why this happening, but for now, remove them  -kam 7/26/2023
+    distinct() %>%
     as.data.table(.) -> params
   
   
@@ -234,7 +238,10 @@ initialize_data <- function(land_alloc, params, year0, leaf_data, climate_data, 
     reg_params <- params[region=={{leaf_region}},]
     leaves <- unique(reg_land_alloc$landleaf)
     leaf_count <- leaf_count + length(leaves)
+    
+    
     for (i in 1:length(leaves)){
+      print(i)
       leaf <- leaves[[i]]
       leaf_names <- c(leaf_names,paste0(leaf_region,"_",leaf))
       leaf_land_alloc <- reg_land_alloc[landleaf=={{leaf}},]$value
@@ -255,10 +262,15 @@ initialize_data <- function(land_alloc, params, year0, leaf_data, climate_data, 
       leaf_npp <- npp_factor*leaf_land_alloc
       leaf_rh <- getRh(1, leaf_bgCarbon, climate_data,
                        rhEff, leaf_land_alloc, leaf_land_alloc)
+      
 
-      leaf_data[data_idx, 1:12 := list(year0,leaf_region,leaf,paste0(leaf_region,"_",leaf), leaf_land_alloc,leaf_params$`above-ground-carbon-density`,
-                                       leaf_params$`below-ground-carbon-density`,leaf_agCarbon,leaf_bgCarbon,leaf_npp,
-                                       leaf_rh, getLitter(leaf_agCarbon, leaf_land_alloc, leaf_land_alloc))]
+      
+      leaf_data[data_idx, 1:12 := list(year0, leaf_region, leaf, paste0(leaf_region,"_",leaf), leaf_land_alloc,
+                                       leaf_params$`above-ground-carbon-density`,
+                                       leaf_params$`below-ground-carbon-density`, leaf_agCarbon, leaf_bgCarbon, leaf_npp,
+                                       leaf_rh, getLitter(leaf_agCarbon,
+                                                          leaf_land_alloc,
+                                                          leaf_land_alloc))]
 
       data_idx <- data_idx + 1
       leaf_idx <- leaf_idx + 1
