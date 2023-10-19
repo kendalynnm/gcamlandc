@@ -56,6 +56,7 @@ process_xml_inputs <- function(land_roots, gcam_land_alloc, nleaves=0, nrows=0){
 
   # process leaves in each land root at a time
   count <- 0
+  #i <- 2
   for (i in 1:5){
     data <- data.frame(region=character(),
                            landleaf=character(),year=integer(),
@@ -137,6 +138,9 @@ process_xml_inputs <- function(land_roots, gcam_land_alloc, nleaves=0, nrows=0){
       data <- dplyr::bind_rows(data,new_leaf_data)  # TODO update to rbindlist
       leaf_count <- leaf_count + 1
 
+      print(unique(new_leaf_data$landleaf))
+
+
       if (leaf_count == 250){
         print(c(i, leaf_count, count))
         all_data <- dplyr::bind_rows(all_data,data)
@@ -156,7 +160,9 @@ process_xml_inputs <- function(land_roots, gcam_land_alloc, nleaves=0, nrows=0){
 process_leaf <- function(leaf_node, gcam_land_alloc){
   name <- xml2::xml_attr(leaf_node,"name")
   region <- get_region(leaf_node)
-
+  # if (name == "UnmanagedPasture_Hawaii") {browser()
+  # }
+  # 
   land_alloc <- get_leaf_land_alloc(leaf_node, name, region, gcam_land_alloc)
 
   leaf_output <- data.frame(region={{region}}, landleaf={{name}}, year=land_alloc$year, land_alloc=land_alloc$value)
@@ -184,14 +190,17 @@ parse_c_densities <- function(leaf_data, years){
 
 get_leaf_land_alloc <- function(leaf_node, leaf_name, leaf_region, gcam_land_alloc){
   leaf_data <- xml2::as_list(leaf_node)  # convert leaf data from xml into something parseable in R
-  
+
   land_alloc_df <- parse_land_alloc(leaf_data)  # get the historical land allocation data from the xmls
   
   gcam_leaf_land_alloc <- get_gcam_land_alloc_by_leaf(leaf_region=leaf_region, leaf_name=leaf_name, gcam_alloc=gcam_land_alloc)
-  
+
   # find all years of overlap between modeled and historical land alloc and remove from historical
   first_model_year <- gcam_leaf_land_alloc$year[1]
   idx <- match(first_model_year, land_alloc_df$year)
+  #Is it OK if first_model_year does not exist in land_alloc_df?
+  #If it's not ok, if(is.na(idx)) stop "Informative Error Message"
+  #If it is ok, if(!is.na(idx)) do this
   land_alloc_df <- land_alloc_df[1:idx-1,]  # remove any land allocation from the historical that's covered by gcam database output
 
   land_alloc_all_years <- rbind(land_alloc_df,gcam_leaf_land_alloc)
@@ -207,6 +216,7 @@ get_leaf_land_alloc <- function(leaf_node, leaf_name, leaf_region, gcam_land_all
 
 
 parse_land_alloc <- function(leaf_data){
+
   # get historical land allocation
   hist_listed_alloc <- leaf_data$`land-use-history`[names(leaf_data$`land-use-history`)=='allocation']
   n_hist <- length(hist_listed_alloc)
